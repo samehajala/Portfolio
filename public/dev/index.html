@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css" />
+
+    <title>Gestionnaire de contacts</title>
+    <script src="atelier.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+    <header>
+        <h1>Gestionnaire de contacts</h1>
+    </header>
+    
+    <section>
+        <article id="formContacts">
+            <header>
+                <h1>Ajout d'un contact</h1>
+            </header>
+            <details>
+                <summary>
+                    Cliquer pour voir le formulaire.
+                </summary>
+                <form method="post" id="formulaire">
+                    <fieldset>
+                        <legend>Nouveau contact</legend>
+                        <label>
+                            <span>Nom :</span>
+                            <input type="text" id="modifNom" required maxlength="32" pattern="[^%&$]+">
+                        </label>
+                        <label>
+                            <span>Prénom :</span>
+                            <input type="text" id="modifPrenom" required maxlength="32" pattern="[^%&$]+">
+                        </label>
+                        <label>
+                            <span>Téléphone :</span>
+                            <input type="tel" id="modifTelephone" placeholder="+216 99 99 99">                        </label>
+
+                        <label>
+                            <span>Email :</span>
+                            <input type="email" id="modifEmail" pattern=".+@enit\.utm\.tn" placeholder="example@enit.utm.tn">
+                        </label>
+                        
+                            <label>
+                                <span>Date de naissance :</span>
+                                <input type="date" id="modifDateNaissance" oninput="verifdate()">
+                            </label>
+                        
+                        <label>
+                            <span>Nombre d'enfants :</span>
+                            <input type="number" id="modifEnfants" min="0" max="5">
+                        </label>
+                    </fieldset>
+                    <button id="Ajouter-client" type="submit">OK</button>
+                </form>
+            </details>
+        </article>
+        <article id="contacts">
+            <header>
+                <h1>Liste des contacts</h1>
+            </header>
+            <table>
+                <thead>
+                    <tr>
+                        <th>indice</th>
+                        <th>drag & drop</th>
+                        <th>Prénom</th>
+                        <th>Nom</th>
+                        <th>Téléphone</th>
+                        <th>Email</th>
+                        <th>Date de naissance</th>
+                        <th>Nombre enfants</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        
+                    </tr>
+                   
+                </tbody>
+            </table>
+            <img src="poubelle.png" class="poubelle">
+        </article>
+        
+    </section>
+    <footer>Enit - Formation HTML5 </footer>
+    <script>
+        $(document).ready(function(){
+        var contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+        
+        
+        function construitTable(tableauDeContacts) {
+           
+             var tbody = $('#contacts tbody');
+
+            
+            tbody.empty();
+
+            
+            for (var i = 0; i < tableauDeContacts.length; i++) {
+            var contact = tableauDeContacts[i];
+
+            
+            var tr = $('<tr>');
+
+          
+            tr.append($('<td>').text(i + 1));
+                var documentIcon = $('<img src="document.png" class="deplacer-contact" draggable="true" data-index="' + i + '">');
+            tr.append($('<td>').append(documentIcon));
+            tr.append($('<td>').text(contact.prenom));
+            tr.append($('<td>').text(contact.nom));
+            tr.append($('<td>').text(contact.telephone));
+            tr.append($('<td>').text(contact.email));
+            tr.append($('<td>').text(contact.dateNaissance));
+            tr.append($('<td>').text(contact.enfants));
+            var deleteIcon = $('<img src="delete.jpg" class="supprimer-contact" height="30px">');
+            deleteIcon.on('click', function() {
+            SupprimeContact(i);
+            });
+            tr.append($('<td>').append(deleteIcon)); 
+            tbody.append(tr);
+}
+        }
+        function SupprimeContact(index) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer ce contact ?')) {
+                contacts.splice(index-1, 1);
+                construitTable(contacts);
+                localStorage.setItem('contacts', JSON.stringify(contacts));
+            }
+        }
+        
+        $('#formulaire').submit(function(event) {
+            event.preventDefault();
+              
+            
+            const nom = $('#modifNom').val();
+            const prenom = $('#modifPrenom').val();
+            const telephone = $('#modifTelephone').val();
+            const email = $('#modifEmail').val();
+            const dateNaissance = $('#modifDateNaissance').val();
+            const enfants = $('#modifEnfants').val();
+
+           
+            const contact = {
+                nom: nom,
+                prenom: prenom,
+                telephone: telephone,
+                email: email,
+                dateNaissance: dateNaissance,
+                enfants: enfants
+               
+            };
+
+           
+            contacts.push(contact);
+
+            
+            construitTable(contacts);
+
+            
+            localStorage.setItem('contacts', JSON.stringify(contacts));
+
+            
+            
+        });
+        $('.deplacer-contact').on('dragstart', function(event) {
+    var index = $(this).data('index');
+    // Copiez l'index dans le clipboard pour le glisser-déposer
+    event.originalEvent.dataTransfer.setData('text/plain', index);
+    });
+
+// Gestionnaire pour la fin du glisser (drop)
+    $('.poubelle').on('drop', function(event) {
+    event.preventDefault();
+    var index = event.originalEvent.dataTransfer.getData('text/plain');
+    SupprimeContact(index);
+    // Jouez le son poubelleSound.mp3 ici
+    });
+
+// Empêchez le comportement par défaut du navigateur pour éviter les problèmes de glisser-déposer
+    $('.poubelle').on('dragover', function(event) {
+    event.preventDefault();
+    });   
+        
+        construitTable(contacts);})
+    </script>
+</body>
